@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/log"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/reecepbcups/prysm/app"
+	"github.com/lightlabs-dev/prysm/app"
 )
 
 func main() {

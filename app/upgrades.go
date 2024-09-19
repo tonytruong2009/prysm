@@ -5,8 +5,8 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"github.com/reecepbcups/prysm/app/upgrades"
-	"github.com/reecepbcups/prysm/app/upgrades/noop"
+	"github.com/lightlabs-dev/prysm/app/upgrades"
+	"github.com/lightlabs-dev/prysm/app/upgrades/noop"
 )
 
 // Upgrades list of chain upgrades

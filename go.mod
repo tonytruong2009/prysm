@@ -1,4 +1,4 @@
-module github.com/reecepbcups/prysm
+module github.com/lightlabs-dev/prysm
 
 go 1.22.3
 

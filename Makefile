@@ -10,7 +10,7 @@ SIMAPP = ./app
 
 # for dockerized protobuf tools
 DOCKER := $(shell which docker)
-HTTPS_GIT := github.com/reecepbcups/prysm.git
+HTTPS_GIT := github.com/lightlabs-dev/prysm.git
 
 export GO111MODULE = on
 

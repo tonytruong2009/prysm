@@ -1,4 +1,4 @@
-module github.com/reecepbcups/prysm/interchaintest
+module github.com/lightlabs-dev/prysm/interchaintest
 
 go 1.22.3
 
@@ -13,7 +13,7 @@ replace (
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0
 
 	// If using custom internal modules, replace your app here with the parent application
-	// github.com/reecepbcups/prysm => ../.
+	// github.com/lightlabs-dev/prysm => ../.
 
 	github.com/vedhavyas/go-subkey => github.com/strangelove-ventures/go-subkey v1.0.7
 )

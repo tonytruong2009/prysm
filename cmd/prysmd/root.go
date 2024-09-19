@@ -25,8 +25,8 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/reecepbcups/prysm/app"
-	"github.com/reecepbcups/prysm/app/params"
+	"github.com/lightlabs-dev/prysm/app"
+	"github.com/lightlabs-dev/prysm/app/params"
 )
 
 const (

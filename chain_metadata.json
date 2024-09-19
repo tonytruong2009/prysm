@@ -8,7 +8,7 @@
     "max_supply": "1000000000000000000"
   },
   "project": {
-    "github": "github.com/reecepbcups/prysm",
+    "github": "github.com/lightlabs-dev/prysm",
     "target_launch_date": "2024-09-11T00:16:00Z",
     "logo": "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.png",
     "website": "https://example.com",

@@ -2,7 +2,7 @@
 
 set -e
 
-GO_MOD_PACKAGE="github.com/reecepbcups/prysm"
+GO_MOD_PACKAGE="github.com/lightlabs-dev/prysm"
 
 echo "Generating gogo proto code"
 cd proto

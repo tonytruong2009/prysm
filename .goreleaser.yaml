@@ -2,7 +2,7 @@ project_name: prysm
 
 release:
   github:
-    owner: reecepbcups
+    owner: lightlabs-dev
     name: prysm
   name_template: '{{.Tag}}'
 

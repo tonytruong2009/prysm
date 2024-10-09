@@ -2,6 +2,7 @@
 
 - **Git Tag**: Use the tag `v0.1.0-devnet` from the Prysm repository: [https://github.com/kleomedes/prysm](https://github.com/kleomedes/prysm).
 - **Genesis File**: Replace with [this genesis file](https://raw.githubusercontent.com/kleomedes/prysm/refs/heads/main/network/prysm-devnet-1/genesis.json).
+- **Grab some tokens**: https://prysm-devnet-faucet.kleomedes.network/
 
 ---
 

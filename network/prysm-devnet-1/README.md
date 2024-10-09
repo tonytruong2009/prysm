@@ -3,7 +3,7 @@
 - **Git Tag**: Use the tag `v0.1.0-devnet` from the Prysm repository: [https://github.com/kleomedes/prysm](https://github.com/kleomedes/prysm).
 - **Genesis File**: Replace with [this genesis file](https://raw.githubusercontent.com/kleomedes/prysm/refs/heads/main/network/prysm-devnet-1/genesis.json).
 - **Grab some tokens**: https://prysm-devnet-faucet.kleomedes.network/
-- **Peer**: ```bash b377fd0b14816eef8e12644340845c127d1e7d93@dns.kleomed.es:26656```
+- **Peer**: ```b377fd0b14816eef8e12644340845c127d1e7d93@dns.kleomed.es:26656```
 
 ---
 

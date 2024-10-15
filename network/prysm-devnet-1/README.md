@@ -11,136 +11,182 @@
 
 This guide assumes you have experience with Linux and blockchain node management. We will cover the steps to install Go 1.22.3, clone and compile the Prysm repository using the `v0.1.0-devnet` tag, initialize the node with the correct `chain-id`, replace the `genesis.json` file, and set up the node as a systemd service.
 
-### 1. Install Golang 1.22.3
-
-Since Go is required to compile Cosmos SDK nodes, the first step is installing Go.
-
-1.1. **Update your package index**:
+### 1. Update & install dependencies
 ```bash
 sudo apt update && sudo apt upgrade -y
-```
+sudo apt install curl git wget htop tmux build-essential jq make lz4 aria2 pv gcc unzip -y
 
-1.2. **Download and install Go 1.22.3**:
-```bash
-wget https://go.dev/dl/go1.22.3.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz
 ```
-
-1.3. **Set up Go environment variables**:
-Add the following line to your shell profile (e.g., `~/.bashrc` or `~/.zshrc`):
+### 2. Install Go
 ```bash
-echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.bashrc
-source ~/.bashrc
-```
-
-1.4. **Verify Go installation**:
-```bash
+cd $HOME
+VER="1.22.3"
+wget "https://golang.org/dl/go$VER.linux-amd64.tar.gz"
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf "go$VER.linux-amd64.tar.gz"
+rm "go$VER.linux-amd64.tar.gz"
+[ ! -f ~/.bash_profile ] && touch ~/.bash_profile
+echo "export PATH=$PATH:/usr/local/go/bin:~/go/bin" >> ~/.bash_profile
+source $HOME/.bash_profile
+[ ! -d ~/go/bin ] && mkdir -p ~/go/bin
 go version
 ```
-Expected output:
-```
-go version go1.22.3 linux/amd64
-```
-
-### 2. Clone and Build Prysm
-
-2.1. **Install prerequisites**:
+### 3. Set Vars
 ```bash
-sudo apt install -y git make gcc
+MONIKER="Put_Moniker_name"
+echo "export MONIKER=$MONIKER" >> $HOME/.bash_profile
+echo "export PRYSM_CHAIN_ID="prysm-devnet-1"" >> $HOME/.bash_profile
+echo "export PRYSM_PORT="29"" >> $HOME/.bash_profile
+source $HOME/.bash_profile
 ```
-
-2.2. **Clone the Prysm repository**:
+### 4. Download Binary
 ```bash
-git clone https://github.com/kleomedes/prysm
+cd $HOME
+rm -rf prysm
+git clone https://github.com/kleomedes/prysm prysm
 cd prysm
-```
-
-2.3. **Check out the `v0.1.0-devnet` tag**:
-```bash
-git checkout tags/v0.1.0-devnet
-```
-
-2.4. **Compile the `prysmd` binary**:
-```bash
+git checkout v0.1.0-devnet
 make install
-```
-This will download dependencies, build the binary, and install it in `$GOPATH/bin`.
-
-2.5. **Verify installation**:
-```bash
 prysmd version
 ```
-
-### 3. Initialize the Node
-
-Now that the `prysmd` binary is installed, initialize your node with the appropriate `chain-id`.
-
-3.1. **Initialize the node**:
+### 5. Config and Init app
 ```bash
-prysmd init <node-name> --chain-id prysm-devnet-1
+prysmd init $MONIKER --chain-id $PRYSM_CHAIN_ID
+sed -i -e "s|^node *=.*|node = \"tcp://localhost:${PRYSM_PORT}657\"|" $HOME/.prysm/config/client.toml
+sed -i -e "s|^keyring-backend *=.*|keyring-backend = \"os\"|" $HOME/.prysm/config/client.toml
+sed -i -e "s|^chain-id *=.*|chain-id = \"prysm-devnet-1\"|" $HOME/.prysm/config/client.toml
 ```
-Replace `<node-name>` with your preferred node name.
-
-### 4. Replace the `genesis.json` File
-
-The initialized node comes with a default `genesis.json`, which needs to be replaced with the official Prysm devnet version.
-
-4.1. **Download the official `genesis.json`**:
+### 6. Download Genesis file and Addrbook
 ```bash
-curl -o ~/.prysmd/config/genesis.json https://raw.githubusercontent.com/kleomedes/prysm/refs/heads/main/network/prysm-devnet-1/genesis.json
+wget -O $HOME/.prysm/config/genesis.json https://josephtran.co/prysm/genesis.json
+wget -O $HOME/.prysm/config/addrbook.json https://josephtran.co/prysm/addrbook.json
 ```
-
-### 5. Set Up `prysmd` as a Systemd Service
-
-Running the node as a systemd service ensures that it will automatically restart on failure and after system reboots.
-
-5.1. **Create a systemd service file**:
+### 7. Set custom port (Optional)
 ```bash
-sudo nano /etc/systemd/system/prysmd.service
+sed -i.bak -e "s%:1317%:${PRYSM_PORT}317%g;
+s%:8080%:${PRYSM_PORT}080%g;
+s%:9090%:${PRYSM_PORT}090%g;
+s%:9091%:${PRYSM_PORT}091%g;
+s%:8545%:${PRYSM_PORT}545%g;
+s%:8546%:${PRYSM_PORT}546%g;
+s%:6065%:${PRYSM_PORT}065%g" $HOME/.prysm/config/app.toml
+sed -i.bak -e "s%:26658%:${PRYSM_PORT}658%g;
+s%:26657%:${PRYSM_PORT}657%g;
+s%:6060%:${PRYSM_PORT}060%g;
+s%:26656%:${PRYSM_PORT}656%g;
+s%^external_address = \"\"%external_address = \"$(wget -qO- eth0.me):${PRYSM_PORT}656\"%;
+s%:26660%:${PRYSM_PORT}660%g" $HOME/.prysm/config/config.toml
 ```
-
-5.2. **Add the following content**:
-```ini
+### 8. Config Seeds and Peers
+```bash
+SEEDS="e3156873994bfbb1999bbf6e4a1ad9cb2f14139e@seed-prysm.j-node.net:29656"
+PEERS="e3156873994bfbb1999bbf6e4a1ad9cb2f14139e@seed-prysm.j-node.net:29656,ff15df83487e4aa8d2819452063f336269958d09@prysm-testnet-peer.itrocket.net:25657,01e40fe961c9522936a8bb7ede533198614abf9f@[2a0e:dc0:2:2f71::1]:14256,e0daf1e5649feba5ba3787288e66e1c9921b2c4c@149.50.96.153:19756,50dcf516699f45351037d08c0074629a0748d446@[2a03:cfc0:8000:13::b910:277f]:14256,69509925a520c5c7c5f505ec4cedab95073388e5@136.243.13.36:29856,2334e9eb772d5aaf9c48a2885c41d5c33e911912@65.109.92.163:3020,88ad3a3b9b981f0bbb52d5c996d0f7e1aa9426fa@65.108.206.118:61256,66ea180127711b96e35683be6e6f1cffc2b04e0a@184.107.169.193:25656,f9758cec18d2af1cca6431a42ec5b68230ae12c8@149.102.142.113:40656,170bf5fa23b18d19148ca9a52dbdde485ad59f7b@65.109.79.185:15656,844f4b8382f6abf86ad13fcd2d384214605b094e@144.76.155.11:26656"
+sed -i -e "s/^seeds *=.*/seeds = \"$SEEDS\"/; s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $HOME/.prysm/config/config.toml
+```
+### 9. Config Pruning & indexer
+```bash
+pruning="custom"
+pruning_keep_recent="100"
+pruning_interval="10"
+sed -i -e "s/^pruning *=.*/pruning = \"$pruning\"/" $HOME/.prysm/config/app.toml
+sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$pruning_keep_recent\"/" $HOME/.prysm/config/app.toml
+sed -i -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$pruning_keep_every\"/" $HOME/.prysm/config/app.toml
+sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$pruning_interval\"/" $HOME/.prysm/config/app.toml
+```
+```bash
+sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0.0uprysm\"/" $HOME/.prysm/config/app.toml
+sed -i -e 's|^indexer *=.*|indexer = "null"|' $HOME/.prysm/config/config.toml
+sed -i 's|^prometheus *=.*|prometheus = true|' $HOME/.prysm/config/config.toml
+```
+### 10. Create service file
+```bash
+sudo tee /etc/systemd/system/prysmd.service > /dev/null <<EOF
 [Unit]
-Description=Prysm Daemon
+Description=Prysm-testnet
 After=network-online.target
 
 [Service]
-User=<your-username>
-ExecStart=/home/<your-username>/go/bin/prysmd start
+User=$USER
+ExecStart=$(which prysmd) start --home $HOME/.prysm
 Restart=on-failure
-LimitNOFILE=4096
+RestartSec=3
+LimitNOFILE=65535
 
 [Install]
 WantedBy=multi-user.target
+EOF
 ```
-Replace `<your-username>` with your actual Linux username.
-
-5.3. **Reload systemd to apply the new service**:
+### 11. Download snapshot
+```bash
+cd $HOME
+sudo systemctl stop prysmd
+cp $HOME/.prysm/data/priv_validator_state.json $HOME/.prysm/priv_validator_state.json.backup
+rm -f prysm_snapshot.lz4
+aria2c -x 16 -s 16 -k 1M https://josephtran.co/prysm/prysm_snapshot.lz4
+prysmd tendermint unsafe-reset-all --home $HOME/.prysm
+lz4 -dc prysm_snapshot.lz4 | pv | tar -xf - -C $HOME/.prysm
+mv $HOME/.prysm/priv_validator_state.json.backup $HOME/.prysm/data/priv_validator_state.json
+```
 ```bash
 sudo systemctl daemon-reload
-```
-
-5.4. **Enable the service to start on boot**:
-```bash
 sudo systemctl enable prysmd
+sudo systemctl start prysmd && sudo journalctl -fu prysmd -o cat
 ```
-
-5.5. **Start the `prysmd` service**:
+### 12. Check status
+---bash
+prysmd status | jq
+```
 ```bash
-sudo systemctl start prysmd
+prysmd status | jq '{ latest_block_height: .sync_info.latest_block_height, catching_up: .sync_info.catching_up }'
 ```
-
-### 6. Monitoring the Node
-
-To verify that your node is running correctly, use the following commands:
-
-6.1. **Check the status of the service**:
+### 13. Check Block sync left
 ```bash
-sudo systemctl status prysmd
-```
+while true; do
+ local_height=$(prysmd status | jq -r '.sync_info.latest_block_height');
+  network_height=$(curl -s https://rpc-prysm.josephtran.xyz/status | jq -r '.result.sync_info.latest_block_height')
+  blocks_left=$((network_height - local_height));
 
-6.2. **View logs in real-time**:
-```bash
-journalctl -fu prysmd
+  echo -e "\033[1;38mYour node height:\033[0m \033[1;34m$local_height\033[0m | \033[1;35mNetwork height:\033[0m \033[1;36m$network_height\033[0m | \033[1;29mBlocks left:\033[0m \033[1;31m$blocks_left\033[0m";
+  sleep 5;
+done
 ```
+### 14. Create Validator
+- Add new wallet
+```bash
+prysmd keys add "Put_Wallet_name"
+```
+- Recover Wallet
+```bash
+prysmd keys add "Put_Wallet_name" --recover
+```
+- Faucet token with link : (https://prysm-devnet-faucet.kleomedes.network/)
+- Check balances
+```bash
+prysmd q bank balances $(prysmd keys show "Put_Wallet_name" -a)
+```
+- Create Validator by validator.json file
+```bash
+cd $HOME
+echo "{\"pubkey\":{\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"$(prysmd comet show-validator | grep -Po '\"key\":\s*\"\K[^"]*')\"},
+    \"amount\": \"1000000uprysm\",
+    \"moniker\": \"Put_Moniker_name\",
+    \"identity\": \"\",
+    \"website\": \"\",
+    \"security\": \"\",
+    \"details\": \"\",
+    \"commission-rate\": \"0.1\",
+    \"commission-max-rate\": \"0.2\",
+    \"commission-max-change-rate\": \"0.01\",
+    \"min-self-delegation\": \"1\"
+}" > validator.json
+```
+- Create Validator with .json file above
+```bash
+prysmd tx staking create-validator validator.json \
+  --from "Put_Wallet_name" \
+  --chain-id prysm-devnet-1 \
+  --gas auto --gas-adjustment 1.5 \
+  -y
+```
+*** You should backup the validator key to recover Validator when you need. File you need in here /.prysm/config/priv_validator_key.json
+ 

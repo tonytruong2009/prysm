@@ -133,9 +133,10 @@ sudo systemctl enable prysmd
 sudo systemctl start prysmd && sudo journalctl -fu prysmd -o cat
 ```
 ### 12. Check status
----bash
+```bash
 prysmd status | jq
 ```
+
 ```bash
 prysmd status | jq '{ latest_block_height: .sync_info.latest_block_height, catching_up: .sync_info.catching_up }'
 ```
